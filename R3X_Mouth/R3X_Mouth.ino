@@ -1,5 +1,6 @@
 #include <Adafruit_NeoPixel.h>
 
+
 #define PIN_AUDIO_INPUT A0
 #define PIN_TOUCH_SENSOR 2
 #define LED_PIN 6
@@ -28,9 +29,10 @@ void setup() {
 
 void loop() {
   // Read the audio input voltage
-  int audioLevel = analogRead(PIN_AUDIO_INPUT) * 3300 / 1023; // Convert to mV
-  //int audioLevel = random(0,1050);
-  //Serial.println(audioLevel);
+  int audioLevel = analogRead(PIN_AUDIO_INPUT) *2; // Convert to mV
+  if (audioLevel <= 200){audioLevel=0;}
+  //int audioLevel = random(0,1023); // only enable this for testing and disable the row above
+  Serial.println(audioLevel);
 
   // Check if the touch sensor is pressed
   touchSensorPressed = digitalRead(PIN_TOUCH_SENSOR) == HIGH;
@@ -85,7 +87,7 @@ void updateRedPattern(int audioLevel) {
       strip.setPixelColor(led, brightness,0,0);
     }
     strip.show();  // Update the NeoPixels
-    delay(50);
+    delay(20);
 }
 
 void updateBluePattern(int audioLevel) {
@@ -94,7 +96,7 @@ void updateBluePattern(int audioLevel) {
       strip.setPixelColor(led, 0,0,brightness);
     }
     strip.show();  // Update the NeoPixels
-    delay(50);
+    delay(20);
 }
 
 void updateBlueGrow(int audioLevel) {
@@ -120,7 +122,7 @@ void updateBlueGrow(int audioLevel) {
   }
 
   strip.show(); // Display the updated matrix
-  delay(50);
+  delay(20);
 }
 
 void updateRedGrow(int audioLevel) {
@@ -146,7 +148,7 @@ void updateRedGrow(int audioLevel) {
   }
 
   strip.show(); // Display the updated matrix
-  delay(50);
+  delay(20);
 }
 
 void updateBlueToRedGrow(int audioLevel) {
@@ -179,7 +181,7 @@ for (int x = startX; x < endX; x++) {
   }
 
   strip.show(); // Display the updated matrix
-  delay(50);
+  delay(20);
 }
 
 void updateRainbowPattern() {
