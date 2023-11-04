@@ -28,16 +28,16 @@ void setup() {
 
 void loop() {
   // Read the audio input voltage
-  //int audioLevel = analogRead(PIN_AUDIO_INPUT) * 3300 / 1023; // Convert to mV
-  int audioLevel = random(1050);
-  Serial.println(audioLevel);
+  int audioLevel = analogRead(PIN_AUDIO_INPUT) * 3300 / 1023; // Convert to mV
+  //int audioLevel = random(0,1050);
+  //Serial.println(audioLevel);
 
   // Check if the touch sensor is pressed
   touchSensorPressed = digitalRead(PIN_TOUCH_SENSOR) == HIGH;
 
   // Change the mode if the touch sensor is pressed for 1 second
   if (touchSensorPressed && (millis() - lastModeChangeTime >= 500)) {
-    currentMode = (currentMode + 1) % 10; // There are 10 modes
+    currentMode = (currentMode + 1) % 11; // There are 11 modes
     lastModeChangeTime = millis();
   }
 
@@ -55,51 +55,46 @@ void loop() {
     case 3: // Red Grow
       updateRedGrow(audioLevel);
       break;
-    case 4: // Rainbow
+    case 4: // Blue to Red Grow
+      updateBlueToRedGrow(audioLevel);
+      break;
+    case 5: // Rainbow
       updateRainbowPattern();
       break;
-    case 5: // Blink Random Blue Lights
+    case 6: // Blink Random Blue Lights
       blinkBlueLights();
       break;
-    case 6: // Blink Random Red Lights
+    case 7: // Blink Random Red Lights
       blinkRedLights();
       break;
-    case 7: // Blink Random Green Lights
+    case 8: // Blink Random Green Lights
       blinkGreenLights();
       break;
-    case 8: // Blink Random White Lights
+    case 9: // Blink Random White Lights
       blinkWhiteLights();
       break;
-    case 9: // Blink Random Multi Lights
+    case 10: // Blink Random Multi Lights
       blinkRandomLights();
       break;
   }
 }
 
 void updateRedPattern(int audioLevel) {
-  for (int row = 0; row < NUM_ROWS; row++) {
-    int numCols = NUM_COLS[row];
-    for (int col = 0; col < numCols; col++) {
-      int pixelIndex = row * 8 + col;
+  for (int led = 0; led < NUM_PIXELS; led++) {
       int brightness = map(audioLevel, 0, audioHighVoltage, 0, maxBrightness);
-      strip.setPixelColor(pixelIndex, strip.Color(brightness, 0, 0));
-      strip.setBrightness(maxBrightness);
+      strip.setPixelColor(led, brightness,0,0);
     }
-  }
     strip.show();  // Update the NeoPixels
+    delay(50);
 }
 
 void updateBluePattern(int audioLevel) {
-  for (int row = 0; row < NUM_ROWS; row++) {
-    int numCols = NUM_COLS[row];
-    for (int col = 0; col < numCols; col++) {
-      int pixelIndex = row * 8 + col;
+  for (int led = 0; led < NUM_PIXELS; led++) {
       int brightness = map(audioLevel, 0, audioHighVoltage, 0, maxBrightness);
-      strip.setPixelColor(pixelIndex, strip.Color(0, 0, brightness));
-      strip.setBrightness(maxBrightness);
+      strip.setPixelColor(led, 0,0,brightness);
     }
-  }
-  strip.show();
+    strip.show();  // Update the NeoPixels
+    delay(50);
 }
 
 void updateBlueGrow(int audioLevel) {
@@ -154,8 +149,41 @@ void updateRedGrow(int audioLevel) {
   delay(50);
 }
 
+void updateBlueToRedGrow(int audioLevel) {
+  int rectWidth = map(audioLevel, 0, 1023, 0, NUM_COLS[NUM_ROWS / 2]);
+  int rectHeight = map(audioLevel, 0, 1023, 0, NUM_ROWS);
+// Clear the matrix
+  strip.clear();
+
+  int startX = CENT_X - (rectWidth / 2);
+  int startY = CENT_Y - (rectHeight / 2)-1 ;
+  int endX = startX + rectWidth;
+  int endY = startY + rectHeight;
+
+for (int x = startX; x < endX; x++) {
+    for (int y = startY; y < endY; y++) {
+      int rowOffset = 0;
+      for (int i = 0; i < y; i++) {
+        rowOffset += NUM_COLS[i];
+      }
+      int pixelIndex = rowOffset + x;
+      // Calculate the color gradient from blue to red
+      int blueValue = map(audioLevel, 0, 1023, 255, 50);
+      int redValue = 0;
+      if (audioLevel >=900){
+        redValue = map(audioLevel, 0, 1023, 0, 255);
+      }
+      Serial.println(redValue);
+      strip.setPixelColor(pixelIndex, strip.Color(redValue, 0, blueValue)); // Set the color gradient
+    }
+  }
+
+  strip.show(); // Display the updated matrix
+  delay(50);
+}
+
 void updateRainbowPattern() {
-  for(long firstPixelHue = 0; firstPixelHue < 65535; firstPixelHue += 1028) {
+  for(long firstPixelHue = 0; firstPixelHue < 65535; firstPixelHue += 512) {
     strip.rainbow(firstPixelHue);
     strip.show(); // Update strip with new contents
   }
