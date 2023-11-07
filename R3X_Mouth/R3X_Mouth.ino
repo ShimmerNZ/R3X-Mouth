@@ -25,9 +25,9 @@ int NUM_COLS[12]= {8, 8, 8, 8, 8, 8, 8, 8, 6, 4, 4, 2};
 
 void setup() {
   mouth.begin();
+  mouth.show();  // Initialize all pixels to 'off'
   eyes.begin();
   eyes.show(); 
-  mouth.show();  // Initialize all pixels to 'off'
   Serial.begin(115200);
   pinMode(PIN_TOUCH_SENSOR, INPUT_PULLUP);
   // turn the eyes on
