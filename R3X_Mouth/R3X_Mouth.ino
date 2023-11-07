@@ -4,12 +4,15 @@
 #define PIN_AUDIO_INPUT A0
 #define PIN_TOUCH_SENSOR 2
 #define LED_PIN 6
+#define EYE_PIN 8
+#define NUM_EYE_PIXELS 2
 #define NUM_PIXELS 80
 #define NUM_ROWS 12
 #define CENT_X         NUM_COLS[NUM_ROWS / 2] / 2
 #define CENT_Y         NUM_ROWS / 2
 
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUM_PIXELS, LED_PIN, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel mouth = Adafruit_NeoPixel(NUM_PIXELS, LED_PIN, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel eyes = Adafruit_NeoPixel(NUM_EYE_PIXELS, EYE_PIN, NEO_GRB + NEO_KHZ800);
 
 int audioHighVoltage = 3300;  // Configure the high voltage input value (in mV)
 int maxBrightness = 150;      // Maximum brightness for the Neopixels
@@ -21,16 +24,22 @@ bool touchSensorPressed = false;
 int NUM_COLS[12]= {8, 8, 8, 8, 8, 8, 8, 8, 6, 4, 4, 2};
 
 void setup() {
-  strip.begin();
-  strip.show();  // Initialize all pixels to 'off'
+  mouth.begin();
+  eyes.begin();
+  eyes.show(); 
+  mouth.show();  // Initialize all pixels to 'off'
   Serial.begin(115200);
   pinMode(PIN_TOUCH_SENSOR, INPUT_PULLUP);
+  // turn the eyes on
+  eyes.setPixelColor(0,64,64,0); //led number followed by brightness 0-255 for each colour - example is yellow at 25% brightness
+  eyes.setPixelColor(1,64,64,0); 
+  eyes.show();  // Update the NeoPixels
 }
 
 void loop() {
   // Read the audio input voltage
   int audioLevel = analogRead(PIN_AUDIO_INPUT) *2; // Convert to mV
-  if (audioLevel <= 200){audioLevel=0;}
+  if (audioLevel <= 300){audioLevel=0;}
   //int audioLevel = random(0,1023); // only enable this for testing and disable the row above
   Serial.println(audioLevel);
 
@@ -84,18 +93,18 @@ void loop() {
 void updateRedPattern(int audioLevel) {
   for (int led = 0; led < NUM_PIXELS; led++) {
       int brightness = map(audioLevel, 0, audioHighVoltage, 0, maxBrightness);
-      strip.setPixelColor(led, brightness,0,0);
+      mouth.setPixelColor(led, brightness,0,0);
     }
-    strip.show();  // Update the NeoPixels
+    mouth.show();  // Update the NeoPixels
     delay(20);
 }
 
 void updateBluePattern(int audioLevel) {
   for (int led = 0; led < NUM_PIXELS; led++) {
       int brightness = map(audioLevel, 0, audioHighVoltage, 0, maxBrightness);
-      strip.setPixelColor(led, 0,0,brightness);
+      mouth.setPixelColor(led, 0,0,brightness);
     }
-    strip.show();  // Update the NeoPixels
+    mouth.show();  // Update the NeoPixels
     delay(20);
 }
 
@@ -103,7 +112,7 @@ void updateBlueGrow(int audioLevel) {
   int rectWidth = map(audioLevel, 0, 1023, 0, NUM_COLS[NUM_ROWS / 2]);
   int rectHeight = map(audioLevel, 0, 1023, 0, NUM_ROWS);
 // Clear the matrix
-  strip.clear();
+  mouth.clear();
 
   int startX = CENT_X - (rectWidth / 2);
   int startY = CENT_Y - (rectHeight / 2)-1 ;
@@ -117,11 +126,11 @@ void updateBlueGrow(int audioLevel) {
         rowOffset += NUM_COLS[i];
       }
       int pixelIndex = rowOffset + x;
-      strip.setPixelColor(pixelIndex, strip.Color(0, 0, maxBrightness)); // Set the color to blue
+      mouth.setPixelColor(pixelIndex, mouth.Color(0, 0, maxBrightness)); // Set the color to blue
     }
   }
 
-  strip.show(); // Display the updated matrix
+  mouth.show(); // Display the updated matrix
   delay(20);
 }
 
@@ -129,7 +138,7 @@ void updateRedGrow(int audioLevel) {
   int rectWidth = map(audioLevel, 0, 1023, 0, NUM_COLS[NUM_ROWS / 2]);
   int rectHeight = map(audioLevel, 0, 1023, 0, NUM_ROWS);
 // Clear the matrix
-  strip.clear();
+  mouth.clear();
 
   int startX = CENT_X - (rectWidth / 2);
   int startY = CENT_Y - (rectHeight / 2)-1 ;
@@ -143,11 +152,11 @@ void updateRedGrow(int audioLevel) {
         rowOffset += NUM_COLS[i];
       }
       int pixelIndex = rowOffset + x;
-      strip.setPixelColor(pixelIndex, strip.Color(maxBrightness, 0, 0)); // Set the color to red
+      mouth.setPixelColor(pixelIndex, mouth.Color(maxBrightness, 0, 0)); // Set the color to red
     }
   }
 
-  strip.show(); // Display the updated matrix
+  mouth.show(); // Display the updated matrix
   delay(20);
 }
 
@@ -155,7 +164,7 @@ void updateBlueToRedGrow(int audioLevel) {
   int rectWidth = map(audioLevel, 0, 1023, 0, NUM_COLS[NUM_ROWS / 2]);
   int rectHeight = map(audioLevel, 0, 1023, 0, NUM_ROWS);
 // Clear the matrix
-  strip.clear();
+  mouth.clear();
 
   int startX = CENT_X - (rectWidth / 2);
   int startY = CENT_Y - (rectHeight / 2)-1 ;
@@ -176,18 +185,18 @@ for (int x = startX; x < endX; x++) {
         redValue = map(audioLevel, 0, 1023, 0, 255);
       }
       Serial.println(redValue);
-      strip.setPixelColor(pixelIndex, strip.Color(redValue, 0, blueValue)); // Set the color gradient
+      mouth.setPixelColor(pixelIndex, mouth.Color(redValue, 0, blueValue)); // Set the color gradient
     }
   }
 
-  strip.show(); // Display the updated matrix
+  mouth.show(); // Display the updated matrix
   delay(20);
 }
 
 void updateRainbowPattern() {
   for(long firstPixelHue = 0; firstPixelHue < 65535; firstPixelHue += 512) {
-    strip.rainbow(firstPixelHue);
-    strip.show(); // Update strip with new contents
+    mouth.rainbow(firstPixelHue);
+    mouth.show(); // Update mouth with new contents
   }
 }
 
@@ -209,15 +218,15 @@ void blinkBlueLights() {
     } while (isBlinking[randomPixel]); // Ensure it's not already blinking
 
     int brightness = random(maxBrightness + 1); // Random brightness
-    strip.setPixelColor(randomPixel, strip.Color(0, 0, brightness));
-    strip.setBrightness(maxBrightness);
+    mouth.setPixelColor(randomPixel, mouth.Color(0, 0, brightness));
+    mouth.setBrightness(maxBrightness);
     isBlinking[randomPixel] = true;
   }
 
-  strip.show();
+  mouth.show();
   delay(50); // Adjust the delay to control the blinking rate
-  strip.clear(); // Turn off all lights
-  strip.show();
+  mouth.clear(); // Turn off all lights
+  mouth.show();
 }
 
 void blinkRedLights() {
@@ -238,15 +247,15 @@ void blinkRedLights() {
     } while (isBlinking[randomPixel]); // Ensure it's not already blinking
 
     int brightness = random(maxBrightness + 1); // Random brightness
-    strip.setPixelColor(randomPixel, strip.Color(brightness, 0, 0));
-    strip.setBrightness(maxBrightness);
+    mouth.setPixelColor(randomPixel, mouth.Color(brightness, 0, 0));
+    mouth.setBrightness(maxBrightness);
     isBlinking[randomPixel] = true;
   }
 
-  strip.show();
+  mouth.show();
   delay(50); // Adjust the delay to control the blinking rate
-  strip.clear(); // Turn off all lights
-  strip.show();
+  mouth.clear(); // Turn off all lights
+  mouth.show();
 }
 
 void blinkGreenLights() {
@@ -267,15 +276,15 @@ void blinkGreenLights() {
     } while (isBlinking[randomPixel]); // Ensure it's not already blinking
 
     int brightness = random(maxBrightness + 1); // Random brightness
-    strip.setPixelColor(randomPixel, strip.Color(0, brightness, 0));
-    strip.setBrightness(maxBrightness);
+    mouth.setPixelColor(randomPixel, mouth.Color(0, brightness, 0));
+    mouth.setBrightness(maxBrightness);
     isBlinking[randomPixel] = true;
   }
 
-  strip.show();
+  mouth.show();
   delay(50); // Adjust the delay to control the blinking rate
-  strip.clear(); // Turn off all lights
-  strip.show();
+  mouth.clear(); // Turn off all lights
+  mouth.show();
 }
 
 void blinkWhiteLights() {
@@ -296,15 +305,15 @@ void blinkWhiteLights() {
     } while (isBlinking[randomPixel]); // Ensure it's not already blinking
 
     int brightness = random(maxBrightness + 1); // Random brightness
-    strip.setPixelColor(randomPixel, strip.Color(brightness, brightness, brightness));
-    strip.setBrightness(maxBrightness);
+    mouth.setPixelColor(randomPixel, mouth.Color(brightness, brightness, brightness));
+    mouth.setBrightness(maxBrightness);
     isBlinking[randomPixel] = true;
   }
 
-  strip.show();
+  mouth.show();
   delay(50); // Adjust the delay to control the blinking rate
-  strip.clear(); // Turn off all lights
-  strip.show();
+  mouth.clear(); // Turn off all lights
+  mouth.show();
 }
 
 void blinkRandomLights() {
@@ -328,12 +337,12 @@ void blinkRandomLights() {
     int r =random(0,maxBrightness);
     int g =random(0,maxBrightness);
     int b =random(0,maxBrightness);
-    strip.setPixelColor(randomPixel, strip.Color(r, g, b));
+    mouth.setPixelColor(randomPixel, mouth.Color(r, g, b));
     isBlinking[randomPixel] = true;
   }
 
-  strip.show();
+  mouth.show();
   delay(50); // Adjust the delay to control the blinking rate
-  strip.clear(); // Turn off all lights
-  strip.show();
+  mouth.clear(); // Turn off all lights
+  mouth.show();
 }
