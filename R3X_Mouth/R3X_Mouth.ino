@@ -5,7 +5,6 @@
 #define PIN_TOUCH_SENSOR 2
 #define LED_PIN 6
 #define EYE_PIN 8
-#define NUM_EYE_PIXELS 2
 #define NUM_PIXELS 80
 #define NUM_ROWS 12
 #define CENT_X         NUM_COLS[NUM_ROWS / 2] / 2
