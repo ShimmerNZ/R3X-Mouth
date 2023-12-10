@@ -1,6 +1,7 @@
 #include <Adafruit_NeoPixel.h>
 #include "SoftwareSerial.h"
 #include <DFMiniMp3.h>
+#include "Communication.h"
 
 #define PIN_AUDIO_INPUT A0
 #define PIN_TOUCH_SENSOR 2
@@ -9,14 +10,14 @@
 #define NUM_ROWS 12
 #define CENT_X         NUM_COLS[NUM_ROWS / 2] / 2
 #define CENT_Y         NUM_ROWS / 2
-
+#define OTHER_ARDUINO 25
+#define MY_ADDRESS 10
 
 class Mp3Notify; 
-
 SoftwareSerial secondarySerial(10, 11); // RX, TX
 typedef DFMiniMp3<SoftwareSerial, Mp3Notify> DfMp3;
 DfMp3 dfmp3(secondarySerial);
-SoftwareSerial mySoftwareSerial(9, 8); // RX, TX
+static Communication Comm(MY_ADDRESS);
 
 class Mp3Notify
 {
@@ -84,11 +85,23 @@ bool touchSensorPressed = false;
 
 int NUM_COLS[12]= {8, 8, 8, 8, 8, 8, 8, 8, 6, 4, 4, 2};
 
+SoftwareSerial mySerial(8, 9); // RX, TX
+const byte numChars = 32;
+char receivedChars[numChars];
+char tempChars[numChars];        // temporary array for use when parsing
+
+// variables to hold the parsed data
+char messageFromPC[numChars] = {0};
+int integerFromPC = 0;
+boolean newData = false;
+
+
 void setup() {
   mouth.begin();
   mouth.show();  // Initialize all pixels to 'off'
   pinMode(PIN_TOUCH_SENSOR, INPUT_PULLUP);
   Serial.begin(115200);
+  mySerial.begin(9600);
   dfmp3.begin();
   dfmp3.reset();
 
@@ -117,16 +130,87 @@ void loop() {
   // Read the audio input voltage
   int audioLevel = analogRead(PIN_AUDIO_INPUT); // Convert to mV
   if (audioLevel <= 1){audioLevel=0;}
-  //int audioLevel = random(0,1023); // only enable this for testing and disable the row above
-  Serial.println(audioLevel);
-  // Check if the touch sensor is pressed
-  touchSensorPressed = digitalRead(PIN_TOUCH_SENSOR) == HIGH;
 
-  // Change the mode if the touch sensor is pressed for 1 second
- // if (touchSensorPressed && (millis() - lastModeChangeTime >= 500)) {
- //   currentMode = (currentMode + 1) % 11; // There are 11 modes
- //   lastModeChangeTime = millis();
- // }
+  switch (Comm.Received())
+    {
+      case INT_MESSAGE:
+      switch(Comm.GetIntMessage())
+      {
+        case 1:
+            dfmp3.playMp3FolderTrack(1);
+            break;
+        case 2:
+            dfmp3.playMp3FolderTrack(2);
+            break;
+        case 3:
+            dfmp3.playMp3FolderTrack(3);
+            break;
+        case 4:
+            dfmp3.playMp3FolderTrack(4);
+            break;
+        case 5:
+            dfmp3.playMp3FolderTrack(5);
+            break;
+        case 6:
+            dfmp3.playMp3FolderTrack(6);
+            break;
+        case 7:
+            dfmp3.playMp3FolderTrack(7);
+            break;
+        case 8:
+            dfmp3.playMp3FolderTrack(8);
+            break;
+        case 9:
+            dfmp3.playMp3FolderTrack(9);
+            break;
+        case 10:
+            dfmp3.playMp3FolderTrack(10);
+            break;
+        case 11:
+            dfmp3.playMp3FolderTrack(11);
+            break;
+        case 12:
+            dfmp3.playMp3FolderTrack(12);
+            break;
+        case 13:
+            dfmp3.playMp3FolderTrack(13);
+            break;
+        case 14:
+            dfmp3.playMp3FolderTrack(14);
+            break;
+        case 15:
+            dfmp3.playMp3FolderTrack(15);
+            break;
+        case 16:
+            dfmp3.playMp3FolderTrack(16);
+            break;
+        case 17:
+            dfmp3.playMp3FolderTrack(17);
+            break;
+        case 18:
+            dfmp3.playMp3FolderTrack(18);
+            break;
+        case 19:
+            dfmp3.playMp3FolderTrack(19);
+            break;
+        case 20:
+            dfmp3.playMp3FolderTrack(20);
+            break;
+        case 21:
+            dfmp3.playMp3FolderTrack(21);
+            break;
+        case 22:
+            dfmp3.playMp3FolderTrack(22);
+            break;
+        case 23:
+            dfmp3.playMp3FolderTrack(23);
+            break;
+      }
+      break;
+    default:   
+  break;
+    }
+
 
   // Update Neopixel lights based on the current mode
   switch (currentMode) {
@@ -259,7 +343,7 @@ for (int x = startX; x < endX; x++) {
       if (audioLevel >=(audioHighVoltage*0.9)){
         redValue = map(audioLevel, 0, audioHighVoltage, 0, 255);
       }
-      Serial.println(redValue);
+      //Serial.println(redValue);
       mouth.setPixelColor(pixelIndex, mouth.Color(redValue, 0, blueValue)); // Set the color gradient
     }
   }
@@ -434,3 +518,4 @@ void waitMilliseconds(uint16_t msWait)
     delay(1);
   }
 }
+
