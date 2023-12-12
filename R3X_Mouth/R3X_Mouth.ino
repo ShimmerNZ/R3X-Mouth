@@ -1,3 +1,7 @@
+// 2 Arduino Nano's connected via SDA - connect a4 to a4 and a5 to a5 (due to serial port limtations). 
+//This servo connected to dfplayer pins 10,11 with envelope follower circuit on a0. LED output on D6
+
+
 #include <Adafruit_NeoPixel.h>
 #include "SoftwareSerial.h"
 #include <DFMiniMp3.h>
@@ -49,7 +53,7 @@ public:
   {
     Serial.print("Play finished for #");
     Serial.println(track);  
-
+    Comm.Transmit(OTHER_ARDUINO, "Finished");
     // start next track
     track += 1;
     // this example will just start back over with 1 after track 3
@@ -131,86 +135,43 @@ void loop() {
   int audioLevel = analogRead(PIN_AUDIO_INPUT); // Convert to mV
   if (audioLevel <= 1){audioLevel=0;}
 
-  switch (Comm.Received())
-    {
-      case INT_MESSAGE:
-      switch(Comm.GetIntMessage())
-      {
-        case 1:
-            dfmp3.playMp3FolderTrack(1);
-            break;
-        case 2:
-            dfmp3.playMp3FolderTrack(2);
-            break;
-        case 3:
-            dfmp3.playMp3FolderTrack(3);
-            break;
-        case 4:
-            dfmp3.playMp3FolderTrack(4);
-            break;
-        case 5:
-            dfmp3.playMp3FolderTrack(5);
-            break;
-        case 6:
-            dfmp3.playMp3FolderTrack(6);
-            break;
-        case 7:
-            dfmp3.playMp3FolderTrack(7);
-            break;
-        case 8:
-            dfmp3.playMp3FolderTrack(8);
-            break;
-        case 9:
-            dfmp3.playMp3FolderTrack(9);
-            break;
-        case 10:
-            dfmp3.playMp3FolderTrack(10);
-            break;
-        case 11:
-            dfmp3.playMp3FolderTrack(11);
-            break;
-        case 12:
-            dfmp3.playMp3FolderTrack(12);
-            break;
-        case 13:
-            dfmp3.playMp3FolderTrack(13);
-            break;
-        case 14:
-            dfmp3.playMp3FolderTrack(14);
-            break;
-        case 15:
-            dfmp3.playMp3FolderTrack(15);
-            break;
-        case 16:
-            dfmp3.playMp3FolderTrack(16);
-            break;
-        case 17:
-            dfmp3.playMp3FolderTrack(17);
-            break;
-        case 18:
-            dfmp3.playMp3FolderTrack(18);
-            break;
-        case 19:
-            dfmp3.playMp3FolderTrack(19);
-            break;
-        case 20:
-            dfmp3.playMp3FolderTrack(20);
-            break;
-        case 21:
-            dfmp3.playMp3FolderTrack(21);
-            break;
-        case 22:
-            dfmp3.playMp3FolderTrack(22);
-            break;
-        case 23:
-            dfmp3.playMp3FolderTrack(23);
-            break;
-      }
-      break;
-    default:   
-  break;
-    }
+  int receivedMessage = Comm.Received();
 
+  if (receivedMessage == STRING_MESSAGE) {
+        // Received a string message that will be in the format command,value
+        Serial.println(Comm.GetStringMessage());
+        String input = Comm.GetStringMessage();
+        int commaPosition = input.indexOf(',');
+        // If a comma is found
+    if (commaPosition != -1) {
+      // Extract the command and value substrings
+      String command = input.substring(0, commaPosition);
+      String valueStr = input.substring(commaPosition + 1);
+      // Convert the value string to an integer
+      int value = valueStr.toInt();
+
+      // Perform actions based on the command
+      if (command.equals("Volume")) {
+        // Set the volume using the value
+        dfmp3.setVolume(value);
+      }
+      else if (command.equals("Song")) {
+        // Set the volume using the value
+        dfmp3.playMp3FolderTrack(value);
+      }
+      else if (command.equals("Mode")) {
+        // Set the volume using the value
+        currentMode = value;
+      }
+       else {
+      // Unknown command
+       Serial.println("Unknown command");
+      }
+    } else {
+      // No comma found
+      Serial.println("Invalid string format");
+    }
+  }
 
   // Update Neopixel lights based on the current mode
   switch (currentMode) {
@@ -349,7 +310,7 @@ for (int x = startX; x < endX; x++) {
   }
 
   mouth.show(); // Display the updated matrix
-  delay(20);
+ // delay(20);
 }
 
 void updateRainbowPattern() {
