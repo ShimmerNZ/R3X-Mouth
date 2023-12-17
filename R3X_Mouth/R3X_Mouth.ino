@@ -112,9 +112,7 @@ void setup() {
   uint16_t version = dfmp3.getSoftwareVersion();
   Serial.print("version ");
   Serial.println(version);
-  Serial.println(dfvolume/30);
   audioHighVoltage = audioHighVoltage * (dfvolume/30);
-  Serial.println(audioHighVoltage);
   uint16_t volume = dfmp3.getVolume();
   Serial.print("volume ");
   Serial.println(volume);
@@ -127,7 +125,9 @@ void setup() {
   Serial.println("starting...");
 
   // start the first track playing
-  dfmp3.playMp3FolderTrack(23);  // sd:/mp3/0001.mp3
+  dfmp3.playMp3FolderTrack(20);  // sd:/mp3/0001.mp3
+  delay(3500);
+  dfmp3.playMp3FolderTrack(1);  // sd:/mp3/0001.mp3
 }
 
 void loop() {
