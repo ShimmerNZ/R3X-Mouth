@@ -8,7 +8,7 @@
 #include "Communication.h"
 
 #define PIN_AUDIO_INPUT A0
-#define PIN_TOUCH_SENSOR 2
+//#define PIN_TOUCH_SENSOR 2
 #define LED_PIN 6
 #define NUM_PIXELS 80
 #define NUM_ROWS 12
